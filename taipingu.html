@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>オンラインランキングタイピングゲーム</title>
+
+<style>
+
+body{
+    margin:0;
+    min-height:100vh;
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:sans-serif;
+    color:white;
+}
+
+.container{
+    width:90%;
+    max-width:800px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(10px);
+    padding:30px;
+    border-radius:25px;
+    text-align:center;
+    box-shadow:0 0 30px rgba(0,0,0,0.4);
+}
+
+h1{
+    font-size:3rem;
+    margin-bottom:20px;
+}
+
+.word{
+    font-size:3rem;
+    color:#38bdf8;
+    margin:30px 0;
+    font-weight:bold;
+}
+
+input{
+    width:80%;
+    padding:15px;
+    border:none;
+    border-radius:15px;
+    font-size:1.3rem;
+    text-align:center;
+}
+
+button{
+    margin-top:20px;
+    padding:15px 30px;
+    border:none;
+    border-radius:15px;
+    background:#38bdf8;
+    color:white;
+    font-size:1rem;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+.info{
+    display:flex;
+    justify-content:space-around;
+    margin-top:20px;
+    font-size:1.2rem;
+}
+
+.ranking{
+    margin-top:40px;
+    text-align:left;
+}
+
+.rankItem{
+    background:rgba(255,255,255,0.08);
+    padding:12px;
+    border-radius:10px;
+    margin-top:10px;
+    display:flex;
+    justify-content:space-between;
+}
+
+.gameover{
+    margin-top:20px;
+    font-size:2rem;
+    color:#f87171;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>⌨ タイピングゲーム</h1>
+
+    <div class="word" id="word">
+        START
+    </div>
+
+    <input
+        type="text"
+        id="input"
+        placeholder="ここに入力"
+    >
+
+    <div class="info">
+
+        <div>
+            スコア :
+            <span id="score">0</span>
+        </div>
+
+        <div>
+            残り時間 :
+            <span id="time">30</span>
+        </div>
+
+    </div>
+
+    <button onclick="startGame()">
+        ゲームスタート
+    </button>
+
+    <div class="gameover" id="gameover"></div>
+
+    <div id="saveArea" style="display:none;">
+
+        <input
+            id="playerName"
+            placeholder="名前を入力"
+            style="margin-top:20px;"
+        >
+
+        <br>
+
+        <button onclick="saveScore()">
+            ランキング送信
+        </button>
+
+    </div>
+
+    <div class="ranking">
+
+        <h2>🌍 世界ランキング</h2>
+
+        <div id="ranking"></div>
+
+    </div>
+
+</div>
+
+<script>
+
+const API_URL =
+"https://script.google.com/macros/s/AKfycbyp7pJQzx_zpgLc_LT0Yyv21mSwPAc754M1RouUmIaz7ksixOYxBMCKqq6-8q12fdge/exec";
+
+const words = [
+    "apple",
+    "banana",
+    "orange",
+    "typing",
+    "javascript",
+    "computer",
+    "internet",
+    "school",
+    "anime",
+    "pokemon",
+    "challenge",
+    "keyboard",
+    "speed",
+    "game"
+];
+
+const wordEl =
+    document.getElementById("word");
+
+const inputEl =
+    document.getElementById("input");
+
+const scoreEl =
+    document.getElementById("score");
+
+const timeEl =
+    document.getElementById("time");
+
+const rankingEl =
+    document.getElementById("ranking");
+
+const gameoverEl =
+    document.getElementById("gameover");
+
+let currentWord = "";
+
+let score = 0;
+
+let time = 30;
+
+let timer;
+
+let playing = false;
+
+function randomWord(){
+
+    return words[
+        Math.floor(Math.random()*words.length)
+    ];
+}
+
+function showWord(){
+
+    currentWord = randomWord();
+
+    wordEl.textContent = currentWord;
+}
+
+function startGame(){
+
+    score = 0;
+
+    time = 30;
+
+    playing = true;
+
+    scoreEl.textContent = score;
+
+    timeEl.textContent = time;
+
+    gameoverEl.textContent = "";
+
+    document.getElementById("saveArea")
+        .style.display = "none";
+
+    showWord();
+
+    inputEl.value = "";
+
+    inputEl.focus();
+
+    clearInterval(timer);
+
+    timer = setInterval(()=>{
+
+        time--;
+
+        timeEl.textContent = time;
+
+        if(time <= 0){
+
+            clearInterval(timer);
+
+            playing = false;
+
+            gameoverEl.textContent =
+                "ゲーム終了！";
+
+            document.getElementById("saveArea")
+                .style.display = "block";
+        }
+
+    },1000);
+}
+
+inputEl.addEventListener("input",()=>{
+
+    if(!playing) return;
+
+    if(inputEl.value === currentWord){
+
+        score++;
+
+        scoreEl.textContent = score;
+
+        inputEl.value = "";
+
+        showWord();
+
+        time += 2;
+
+        timeEl.textContent = time;
+    }
+
+});
+
+async function saveScore(){
+
+    const name =
+        document.getElementById("playerName")
+        .value || "名無し";
+
+    await fetch(API_URL,{
+
+        method:"POST",
+
+        body:JSON.stringify({
+
+            name:name,
+
+            score:score
+
+        })
+
+    });
+
+    alert("ランキング送信完了！");
+
+    loadRanking();
+
+    document.getElementById("saveArea")
+        .style.display = "none";
+}
+
+async function loadRanking(){
+
+    const response =
+        await fetch(API_URL);
+
+    const data =
+        await response.json();
+
+    rankingEl.innerHTML = "";
+
+    data.forEach((player,index)=>{
+
+        rankingEl.innerHTML += `
+
+            <div class="rankItem">
+
+                <span>
+                    ${index+1}位
+                    ${player[0]}
+                </span>
+
+                <span>
+                    ${player[1]}
+                </span>
+
+            </div>
+
+        `;
+    });
+}
+
+loadRanking();
+
+</script>
+
+</body>
+</html>
