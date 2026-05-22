@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>オンラインランキングタイピングゲーム</title>
+<title>コンボ付きタイピングゲーム</title>
 
 <style>
 
@@ -16,6 +16,7 @@ body{
     align-items:center;
     font-family:sans-serif;
     color:white;
+    overflow:auto;
 }
 
 .container{
@@ -27,6 +28,7 @@ body{
     border-radius:25px;
     text-align:center;
     box-shadow:0 0 30px rgba(0,0,0,0.4);
+    margin:20px 0;
 }
 
 h1{
@@ -35,10 +37,20 @@ h1{
 }
 
 .word{
-    font-size:3rem;
+    font-size:3.2rem;
     color:#38bdf8;
     margin:30px 0;
     font-weight:bold;
+    animation:glow 2s infinite alternate;
+}
+
+@keyframes glow{
+    from{
+        text-shadow:0 0 10px #38bdf8;
+    }
+    to{
+        text-shadow:0 0 35px #38bdf8;
+    }
 }
 
 input{
@@ -46,7 +58,7 @@ input{
     padding:15px;
     border:none;
     border-radius:15px;
-    font-size:1.3rem;
+    font-size:1.2rem;
     text-align:center;
 }
 
@@ -73,6 +85,36 @@ button:hover{
     font-size:1.2rem;
 }
 
+.combo{
+    margin-top:20px;
+    font-size:2rem;
+    font-weight:bold;
+    color:#facc15;
+    opacity:0;
+    transform:scale(0.5);
+    transition:0.2s;
+}
+
+.combo.show{
+    opacity:1;
+    transform:scale(1.2);
+    animation:pulse 0.4s;
+}
+
+@keyframes pulse{
+    0%{
+        transform:scale(0.5);
+    }
+
+    50%{
+        transform:scale(1.4);
+    }
+
+    100%{
+        transform:scale(1.2);
+    }
+}
+
 .ranking{
     margin-top:40px;
     text-align:left;
@@ -93,6 +135,30 @@ button:hover{
     color:#f87171;
 }
 
+.nameBox{
+    margin-bottom:20px;
+}
+
+.effect{
+    position:fixed;
+    font-size:2rem;
+    pointer-events:none;
+    animation:fly 1s forwards;
+}
+
+@keyframes fly{
+
+    0%{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+    100%{
+        opacity:0;
+        transform:translateY(-120px);
+    }
+}
+
 </style>
 </head>
 
@@ -101,6 +167,16 @@ button:hover{
 <div class="container">
 
     <h1>⌨ タイピングゲーム</h1>
+
+    <div class="nameBox">
+
+        <input
+            type="text"
+            id="playerName"
+            placeholder="名前を入力"
+        >
+
+    </div>
 
     <div class="word" id="word">
         START
@@ -111,6 +187,10 @@ button:hover{
         id="input"
         placeholder="ここに入力"
     >
+
+    <div class="combo" id="combo">
+        🔥 0 COMBO
+    </div>
 
     <div class="info">
 
@@ -131,22 +211,6 @@ button:hover{
     </button>
 
     <div class="gameover" id="gameover"></div>
-
-    <div id="saveArea" style="display:none;">
-
-        <input
-            id="playerName"
-            placeholder="名前を入力"
-            style="margin-top:20px;"
-        >
-
-        <br>
-
-        <button onclick="saveScore()">
-            ランキング送信
-        </button>
-
-    </div>
 
     <div class="ranking">
 
@@ -181,26 +245,31 @@ const words = [
 ];
 
 const wordEl =
-    document.getElementById("word");
+document.getElementById("word");
 
 const inputEl =
-    document.getElementById("input");
+document.getElementById("input");
 
 const scoreEl =
-    document.getElementById("score");
+document.getElementById("score");
 
 const timeEl =
-    document.getElementById("time");
+document.getElementById("time");
 
 const rankingEl =
-    document.getElementById("ranking");
+document.getElementById("ranking");
 
 const gameoverEl =
-    document.getElementById("gameover");
+document.getElementById("gameover");
+
+const comboEl =
+document.getElementById("combo");
 
 let currentWord = "";
 
 let score = 0;
+
+let combo = 0;
 
 let time = 30;
 
@@ -226,6 +295,8 @@ function startGame(){
 
     score = 0;
 
+    combo = 0;
+
     time = 30;
 
     playing = true;
@@ -234,10 +305,10 @@ function startGame(){
 
     timeEl.textContent = time;
 
-    gameoverEl.textContent = "";
+    comboEl.textContent =
+    "🔥 0 COMBO";
 
-    document.getElementById("saveArea")
-        .style.display = "none";
+    gameoverEl.textContent = "";
 
     showWord();
 
@@ -247,7 +318,7 @@ function startGame(){
 
     clearInterval(timer);
 
-    timer = setInterval(()=>{
+    timer = setInterval(async ()=>{
 
         time--;
 
@@ -260,10 +331,9 @@ function startGame(){
             playing = false;
 
             gameoverEl.textContent =
-                "ゲーム終了！";
+            "ゲーム終了！";
 
-            document.getElementById("saveArea")
-                .style.display = "block";
+            await autoSave();
         }
 
     },1000);
@@ -275,26 +345,65 @@ inputEl.addEventListener("input",()=>{
 
     if(inputEl.value === currentWord){
 
-        score++;
+        combo++;
+
+        score += 1 + Math.floor(combo / 5);
 
         scoreEl.textContent = score;
+
+        comboEl.textContent =
+        "🔥 " + combo + " COMBO";
+
+        comboEl.classList.add("show");
+
+        setTimeout(()=>{
+
+            comboEl.classList.remove("show");
+
+        },200);
+
+        createEffect();
 
         inputEl.value = "";
 
         showWord();
 
-        time += 2;
+        time += 1;
 
         timeEl.textContent = time;
     }
 
 });
 
-async function saveScore(){
+function createEffect(){
+
+    const effect =
+    document.createElement("div");
+
+    effect.className = "effect";
+
+    effect.innerHTML = "🔥+" + combo;
+
+    effect.style.left =
+    (window.innerWidth/2 - 30) + "px";
+
+    effect.style.top =
+    (window.innerHeight/2) + "px";
+
+    document.body.appendChild(effect);
+
+    setTimeout(()=>{
+
+        effect.remove();
+
+    },1000);
+}
+
+async function autoSave(){
 
     const name =
-        document.getElementById("playerName")
-        .value || "名無し";
+    document.getElementById("playerName")
+    .value || "名無し";
 
     await fetch(API_URL,{
 
@@ -310,40 +419,45 @@ async function saveScore(){
 
     });
 
-    alert("ランキング送信完了！");
+    gameoverEl.textContent =
+    "ゲーム終了！ ランキング保存完了！";
 
     loadRanking();
-
-    document.getElementById("saveArea")
-        .style.display = "none";
 }
 
 async function loadRanking(){
 
     const response =
-        await fetch(API_URL);
+    await fetch(API_URL);
 
     const data =
-        await response.json();
+    await response.json();
 
     rankingEl.innerHTML = "";
 
     data.forEach((player,index)=>{
 
+        let crown = "";
+
+        if(index === 0){
+            crown = "👑";
+        }
+
         rankingEl.innerHTML += `
 
-            <div class="rankItem">
+        <div class="rankItem">
 
-                <span>
-                    ${index+1}位
-                    ${player[0]}
-                </span>
+            <span>
+                ${crown}
+                ${index+1}位
+                ${player[0]}
+            </span>
 
-                <span>
-                    ${player[1]}
-                </span>
+            <span>
+                ${player[1]}
+            </span>
 
-            </div>
+        </div>
 
         `;
     });
