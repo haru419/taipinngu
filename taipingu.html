@@ -3,108 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>コンボ付きタイピングゲーム</title>
+
+<title>タイピングゲーム</title>
 
 <style>
 
 body{
     margin:0;
-    min-height:100vh;
-    background:linear-gradient(135deg,#0f172a,#1e293b);
+    background:#0f172a;
+    color:white;
+    font-family:sans-serif;
     display:flex;
     justify-content:center;
     align-items:center;
-    font-family:sans-serif;
-    color:white;
+    min-height:100vh;
 }
 
 .container{
     width:90%;
-    max-width:800px;
-    background:rgba(255,255,255,0.08);
+    max-width:700px;
+    background:#1e293b;
     padding:30px;
-    border-radius:25px;
+    border-radius:20px;
     text-align:center;
 }
 
 .word{
-    font-size:3rem;
+    font-size:60px;
     color:#38bdf8;
     margin:30px 0;
-    font-weight:bold;
 }
 
 input{
     width:80%;
     padding:15px;
+    font-size:24px;
     border:none;
-    border-radius:15px;
-    font-size:1.2rem;
+    border-radius:10px;
     text-align:center;
 }
 
 button{
     margin-top:20px;
     padding:15px 30px;
+    font-size:20px;
     border:none;
-    border-radius:15px;
+    border-radius:10px;
     background:#38bdf8;
     color:white;
     cursor:pointer;
 }
 
-.info{
-    display:flex;
-    justify-content:space-around;
-    margin-top:20px;
-    font-size:1.2rem;
-}
-
 .combo{
-    font-size:2rem;
-    color:#facc15;
     margin-top:20px;
+    font-size:40px;
+    color:gold;
     font-weight:bold;
-    animation:none;
 }
 
-.combo.active{
-    animation:comboAnim 0.3s;
-}
-
-@keyframes comboAnim{
-
-    0%{
-        transform:scale(1);
-    }
-
-    50%{
-        transform:scale(1.4);
-    }
-
-    100%{
-        transform:scale(1);
-    }
-}
-
-.effect{
-    position:fixed;
-    font-size:2rem;
-    animation:floatUp 1s forwards;
-    pointer-events:none;
-}
-
-@keyframes floatUp{
-
-    from{
-        opacity:1;
-        transform:translateY(0);
-    }
-
-    to{
-        opacity:0;
-        transform:translateY(-100px);
-    }
+.info{
+    margin-top:20px;
+    font-size:24px;
 }
 
 </style>
@@ -116,45 +75,35 @@ button{
 
     <h1>⌨ タイピングゲーム</h1>
 
-    <input
-        type="text"
-        id="playerName"
-        placeholder="名前を入力"
-    >
-
     <div class="word" id="word">
         START
     </div>
 
     <input
-        type="text"
         id="input"
+        type="text"
         placeholder="ここに入力"
     >
 
     <div class="combo" id="combo">
-        🔥 0 COMBO
+        🔥0 COMBO
     </div>
 
     <div class="info">
 
-        <div>
-            スコア :
-            <span id="score">0</span>
-        </div>
+        スコア :
+        <span id="score">0</span>
 
-        <div>
-            残り時間 :
-            <span id="time">30</span>
-        </div>
+        <br><br>
+
+        時間 :
+        <span id="time">30</span>
 
     </div>
 
     <button onclick="startGame()">
-        ゲームスタート
+        スタート
     </button>
-
-    <h2 id="gameover"></h2>
 
 </div>
 
@@ -165,29 +114,10 @@ const words = [
     "banana",
     "orange",
     "typing",
-    "javascript",
-    "computer",
+    "game",
     "anime",
-    "game"
+    "computer"
 ];
-
-const wordEl =
-document.getElementById("word");
-
-const inputEl =
-document.getElementById("input");
-
-const scoreEl =
-document.getElementById("score");
-
-const timeEl =
-document.getElementById("time");
-
-const comboEl =
-document.getElementById("combo");
-
-const gameoverEl =
-document.getElementById("gameover");
 
 let currentWord = "";
 
@@ -200,6 +130,21 @@ let time = 30;
 let timer;
 
 let playing = false;
+
+const wordEl =
+document.getElementById("word");
+
+const inputEl =
+document.getElementById("input");
+
+const scoreEl =
+document.getElementById("score");
+
+const comboEl =
+document.getElementById("combo");
+
+const timeEl =
+document.getElementById("time");
 
 function randomWord(){
 
@@ -227,12 +172,10 @@ function startGame(){
 
     scoreEl.textContent = score;
 
-    timeEl.textContent = time;
-
     comboEl.textContent =
-    "🔥 0 COMBO";
+    "🔥0 COMBO";
 
-    gameoverEl.textContent = "";
+    timeEl.textContent = time;
 
     showWord();
 
@@ -254,8 +197,9 @@ function startGame(){
 
             playing = false;
 
-            gameoverEl.textContent =
-            "ゲーム終了！";
+            alert(
+                "ゲーム終了！ スコア：" + score
+            );
         }
 
     },1000);
@@ -269,56 +213,19 @@ inputEl.addEventListener("input",()=>{
 
         combo++;
 
-        score += 1 + Math.floor(combo / 5);
+        score++;
 
         scoreEl.textContent = score;
 
         comboEl.textContent =
-        "🔥 " + combo + " COMBO";
-
-        comboEl.classList.remove("active");
-
-        void comboEl.offsetWidth;
-
-        comboEl.classList.add("active");
-
-        createEffect();
+        "🔥" + combo + " COMBO";
 
         inputEl.value = "";
 
         showWord();
-
-        time += 1;
-
-        timeEl.textContent = time;
     }
 
 });
-
-function createEffect(){
-
-    const effect =
-    document.createElement("div");
-
-    effect.className = "effect";
-
-    effect.innerHTML =
-    "🔥 COMBO";
-
-    effect.style.left =
-    (window.innerWidth/2 - 50) + "px";
-
-    effect.style.top =
-    (window.innerHeight/2) + "px";
-
-    document.body.appendChild(effect);
-
-    setTimeout(()=>{
-
-        effect.remove();
-
-    },1000);
-}
 
 </script>
 
