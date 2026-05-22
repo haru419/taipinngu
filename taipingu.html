@@ -16,41 +16,22 @@ body{
     align-items:center;
     font-family:sans-serif;
     color:white;
-    overflow:auto;
 }
 
 .container{
     width:90%;
     max-width:800px;
     background:rgba(255,255,255,0.08);
-    backdrop-filter:blur(10px);
     padding:30px;
     border-radius:25px;
     text-align:center;
-    box-shadow:0 0 30px rgba(0,0,0,0.4);
-    margin:20px 0;
-}
-
-h1{
-    font-size:3rem;
-    margin-bottom:20px;
 }
 
 .word{
-    font-size:3.2rem;
+    font-size:3rem;
     color:#38bdf8;
     margin:30px 0;
     font-weight:bold;
-    animation:glow 2s infinite alternate;
-}
-
-@keyframes glow{
-    from{
-        text-shadow:0 0 10px #38bdf8;
-    }
-    to{
-        text-shadow:0 0 35px #38bdf8;
-    }
 }
 
 input{
@@ -69,13 +50,7 @@ button{
     border-radius:15px;
     background:#38bdf8;
     color:white;
-    font-size:1rem;
     cursor:pointer;
-    transition:0.3s;
-}
-
-button:hover{
-    transform:scale(1.05);
 }
 
 .info{
@@ -86,24 +61,21 @@ button:hover{
 }
 
 .combo{
-    margin-top:20px;
     font-size:2rem;
-    font-weight:bold;
     color:#facc15;
-    opacity:0;
-    transform:scale(0.5);
-    transition:0.2s;
+    margin-top:20px;
+    font-weight:bold;
+    animation:none;
 }
 
-.combo.show{
-    opacity:1;
-    transform:scale(1.2);
-    animation:pulse 0.4s;
+.combo.active{
+    animation:comboAnim 0.3s;
 }
 
-@keyframes pulse{
+@keyframes comboAnim{
+
     0%{
-        transform:scale(0.5);
+        transform:scale(1);
     }
 
     50%{
@@ -111,51 +83,27 @@ button:hover{
     }
 
     100%{
-        transform:scale(1.2);
+        transform:scale(1);
     }
-}
-
-.ranking{
-    margin-top:40px;
-    text-align:left;
-}
-
-.rankItem{
-    background:rgba(255,255,255,0.08);
-    padding:12px;
-    border-radius:10px;
-    margin-top:10px;
-    display:flex;
-    justify-content:space-between;
-}
-
-.gameover{
-    margin-top:20px;
-    font-size:2rem;
-    color:#f87171;
-}
-
-.nameBox{
-    margin-bottom:20px;
 }
 
 .effect{
     position:fixed;
     font-size:2rem;
+    animation:floatUp 1s forwards;
     pointer-events:none;
-    animation:fly 1s forwards;
 }
 
-@keyframes fly{
+@keyframes floatUp{
 
-    0%{
+    from{
         opacity:1;
         transform:translateY(0);
     }
 
-    100%{
+    to{
         opacity:0;
-        transform:translateY(-120px);
+        transform:translateY(-100px);
     }
 }
 
@@ -168,15 +116,11 @@ button:hover{
 
     <h1>⌨ タイピングゲーム</h1>
 
-    <div class="nameBox">
-
-        <input
-            type="text"
-            id="playerName"
-            placeholder="名前を入力"
-        >
-
-    </div>
+    <input
+        type="text"
+        id="playerName"
+        placeholder="名前を入力"
+    >
 
     <div class="word" id="word">
         START
@@ -210,22 +154,11 @@ button:hover{
         ゲームスタート
     </button>
 
-    <div class="gameover" id="gameover"></div>
-
-    <div class="ranking">
-
-        <h2>🌍 世界ランキング</h2>
-
-        <div id="ranking"></div>
-
-    </div>
+    <h2 id="gameover"></h2>
 
 </div>
 
 <script>
-
-const API_URL =
-"https://script.google.com/macros/s/AKfycbyp7pJQzx_zpgLc_LT0Yyv21mSwPAc754M1RouUmIaz7ksixOYxBMCKqq6-8q12fdge/exec";
 
 const words = [
     "apple",
@@ -234,13 +167,7 @@ const words = [
     "typing",
     "javascript",
     "computer",
-    "internet",
-    "school",
     "anime",
-    "pokemon",
-    "challenge",
-    "keyboard",
-    "speed",
     "game"
 ];
 
@@ -256,14 +183,11 @@ document.getElementById("score");
 const timeEl =
 document.getElementById("time");
 
-const rankingEl =
-document.getElementById("ranking");
+const comboEl =
+document.getElementById("combo");
 
 const gameoverEl =
 document.getElementById("gameover");
-
-const comboEl =
-document.getElementById("combo");
 
 let currentWord = "";
 
@@ -318,7 +242,7 @@ function startGame(){
 
     clearInterval(timer);
 
-    timer = setInterval(async ()=>{
+    timer = setInterval(()=>{
 
         time--;
 
@@ -332,8 +256,6 @@ function startGame(){
 
             gameoverEl.textContent =
             "ゲーム終了！";
-
-            await autoSave();
         }
 
     },1000);
@@ -354,13 +276,11 @@ inputEl.addEventListener("input",()=>{
         comboEl.textContent =
         "🔥 " + combo + " COMBO";
 
-        comboEl.classList.add("show");
+        comboEl.classList.remove("active");
 
-        setTimeout(()=>{
+        void comboEl.offsetWidth;
 
-            comboEl.classList.remove("show");
-
-        },200);
+        comboEl.classList.add("active");
 
         createEffect();
 
@@ -382,10 +302,11 @@ function createEffect(){
 
     effect.className = "effect";
 
-    effect.innerHTML = "🔥+" + combo;
+    effect.innerHTML =
+    "🔥 COMBO";
 
     effect.style.left =
-    (window.innerWidth/2 - 30) + "px";
+    (window.innerWidth/2 - 50) + "px";
 
     effect.style.top =
     (window.innerHeight/2) + "px";
@@ -398,72 +319,6 @@ function createEffect(){
 
     },1000);
 }
-
-async function autoSave(){
-
-    const name =
-    document.getElementById("playerName")
-    .value || "名無し";
-
-    await fetch(API_URL,{
-
-        method:"POST",
-
-        body:JSON.stringify({
-
-            name:name,
-
-            score:score
-
-        })
-
-    });
-
-    gameoverEl.textContent =
-    "ゲーム終了！ ランキング保存完了！";
-
-    loadRanking();
-}
-
-async function loadRanking(){
-
-    const response =
-    await fetch(API_URL);
-
-    const data =
-    await response.json();
-
-    rankingEl.innerHTML = "";
-
-    data.forEach((player,index)=>{
-
-        let crown = "";
-
-        if(index === 0){
-            crown = "👑";
-        }
-
-        rankingEl.innerHTML += `
-
-        <div class="rankItem">
-
-            <span>
-                ${crown}
-                ${index+1}位
-                ${player[0]}
-            </span>
-
-            <span>
-                ${player[1]}
-            </span>
-
-        </div>
-
-        `;
-    });
-}
-
-loadRanking();
 
 </script>
 
