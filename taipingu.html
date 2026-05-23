@@ -66,6 +66,15 @@ button{
     font-size:24px;
 }
 
+#ranking{
+    margin-top:20px;
+}
+
+.rankItem{
+    margin:10px;
+    font-size:24px;
+}
+
 </style>
 </head>
 
@@ -104,9 +113,12 @@ button{
     <button onclick="startGame()">
         スタート
     </button>
+
     <h2>🏆 ランキング</h2>
 
-<div id="ranking"></div>
+    <div id="ranking">
+        読み込み中...
+    </div>
 
 </div>
 
@@ -116,31 +128,27 @@ import { initializeApp }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
-getFirestore,
-collection,
-addDoc,
-query,
-orderBy,
-limit,
-getDocs
+    getFirestore,
+    collection,
+    addDoc,
+    query,
+    orderBy,
+    limit,
+    getDocs
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-
 const firebaseConfig = {
 
-  apiKey: "AIzaSyBc30xUy5mXqDegHSNiYllEsJXJ66BjwF4",
-  authDomain: "rankingtaipingu.firebaseapp.com",
-  projectId: "rankingtaipingu",
+    apiKey: "AIzaSyBc30xUy5mXqDegHSNiYllEsJXJ66BjwF4",
+    authDomain: "rankingtaipingu.firebaseapp.com",
+    projectId: "rankingtaipingu",
 
 };
 
-const app =
-initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
-const db =
-getFirestore(app);
-
+const db = getFirestore(app);
 
 const words = [
     "apple",
@@ -159,26 +167,16 @@ let time = 30;
 let timer;
 let playing = false;
 
-const wordEl =
-document.getElementById("word");
-
-const inputEl =
-document.getElementById("input");
-
-const scoreEl =
-document.getElementById("score");
-
-const comboEl =
-document.getElementById("combo");
-
-const timeEl =
-document.getElementById("time");
-
+const wordEl = document.getElementById("word");
+const inputEl = document.getElementById("input");
+const scoreEl = document.getElementById("score");
+const comboEl = document.getElementById("combo");
+const timeEl = document.getElementById("time");
 
 function randomWord(){
 
     return words[
-        Math.floor(Math.random()*words.length)
+        Math.floor(Math.random() * words.length)
     ];
 
 }
@@ -191,7 +189,6 @@ function showWord(){
 
 }
 
-
 window.startGame = function(){
 
     score = 0;
@@ -200,16 +197,12 @@ window.startGame = function(){
     playing = true;
 
     scoreEl.textContent = score;
-
-    comboEl.textContent =
-    "🔥0 COMBO";
-
+    comboEl.textContent = "🔥0 COMBO";
     timeEl.textContent = time;
 
     showWord();
 
     inputEl.value = "";
-
     inputEl.focus();
 
     clearInterval(timer);
@@ -254,7 +247,6 @@ window.startGame = function(){
 
 }
 
-
 inputEl.addEventListener("input",()=>{
 
     if(!playing) return;
@@ -276,7 +268,6 @@ inputEl.addEventListener("input",()=>{
     }
 
 });
-
 
 async function loadRanking(){
 
@@ -304,7 +295,7 @@ async function loadRanking(){
         const data = doc.data();
 
         rankingEl.innerHTML += `
-        <div style="margin:10px;font-size:24px;">
+        <div class="rankItem">
             🏆 ${rank}位 :
             ${data.name}
             - ${data.score}
@@ -320,35 +311,6 @@ async function loadRanking(){
 loadRanking();
 
 </script>
-<script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import {
-getFirestore,
-collection,
-addDoc,
-query,
-orderBy,
-limit,
-getDocs
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-
-const firebaseConfig = {
-
-  apiKey: "AIzaSyBc30xUy5mXqDegHSNiYllEsJXJ66BjwF4",
-  authDomain: "rankingtaipingu.firebaseapp.com",
-  projectId: "rankingtaipingu",
-
-};
-
-const app =
-initializeApp(firebaseConfig);
-
-const db =
-getFirestore(app);
 </body>
 </html>
