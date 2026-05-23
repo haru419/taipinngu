@@ -110,7 +110,37 @@ button{
 
 </div>
 
-<script>
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+query,
+orderBy,
+limit,
+getDocs
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyBc30xUy5mXqDegHSNiYllEsJXJ66BjwF4",
+  authDomain: "rankingtaipingu.firebaseapp.com",
+  projectId: "rankingtaipingu",
+
+};
+
+const app =
+initializeApp(firebaseConfig);
+
+const db =
+getFirestore(app);
+
 
 const words = [
     "apple",
@@ -123,15 +153,10 @@ const words = [
 ];
 
 let currentWord = "";
-
 let score = 0;
-
 let combo = 0;
-
 let time = 30;
-
 let timer;
-
 let playing = false;
 
 const wordEl =
@@ -149,11 +174,13 @@ document.getElementById("combo");
 const timeEl =
 document.getElementById("time");
 
+
 function randomWord(){
 
     return words[
         Math.floor(Math.random()*words.length)
     ];
+
 }
 
 function showWord(){
@@ -161,16 +188,15 @@ function showWord(){
     currentWord = randomWord();
 
     wordEl.textContent = currentWord;
+
 }
 
-function startGame(){
+
+window.startGame = function(){
 
     score = 0;
-
     combo = 0;
-
     time = 30;
-
     playing = true;
 
     scoreEl.textContent = score;
@@ -188,7 +214,7 @@ function startGame(){
 
     clearInterval(timer);
 
-    timer = setInterval(()=>{
+    timer = setInterval(async ()=>{
 
         time--;
 
@@ -201,28 +227,33 @@ function startGame(){
             playing = false;
 
             const name =
-prompt("名前を入力してください");
+            prompt("名前を入力してください");
 
-if(name){
+            if(name){
 
-    await addDoc(
-        collection(db,"ranking"),
-        {
-            name:name,
-            score:score,
-            created:Date.now()
-        }
-    );
+                await addDoc(
+                    collection(db,"ranking"),
+                    {
+                        name:name,
+                        score:score,
+                        created:Date.now()
+                    }
+                );
 
-}
+            }
 
-loadRanking();
+            loadRanking();
 
-alert("ゲーム終了！");
+            alert(
+                "ゲーム終了！ スコア：" + score
+            );
+
         }
 
     },1000);
+
 }
+
 
 inputEl.addEventListener("input",()=>{
 
@@ -231,7 +262,6 @@ inputEl.addEventListener("input",()=>{
     if(inputEl.value === currentWord){
 
         combo++;
-
         score++;
 
         scoreEl.textContent = score;
@@ -242,15 +272,19 @@ inputEl.addEventListener("input",()=>{
         inputEl.value = "";
 
         showWord();
+
     }
 
 });
+
+
 async function loadRanking(){
 
     const rankingEl =
     document.getElementById("ranking");
 
-    rankingEl.innerHTML = "読み込み中...";
+    rankingEl.innerHTML =
+    "読み込み中...";
 
     const q = query(
         collection(db,"ranking"),
@@ -270,8 +304,8 @@ async function loadRanking(){
         const data = doc.data();
 
         rankingEl.innerHTML += `
-        <div>
-            ${rank}位 :
+        <div style="margin:10px;font-size:24px;">
+            🏆 ${rank}位 :
             ${data.name}
             - ${data.score}
         </div>
@@ -282,7 +316,9 @@ async function loadRanking(){
     });
 
 }
-    loadRanking();
+
+loadRanking();
+
 </script>
 <script type="module">
 
