@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="icon" href="data:,">
-    
 <title>タイピングゲーム</title>
 
 <style>
@@ -68,15 +66,6 @@ button{
     font-size:24px;
 }
 
-#ranking{
-    margin-top:20px;
-}
-
-.rankItem{
-    margin:10px;
-    font-size:24px;
-}
-
 </style>
 </head>
 
@@ -112,45 +101,13 @@ button{
 
     </div>
 
-    <button onclick="startGame()">
+    <button id="startButton">
         スタート
     </button>
 
-    <h2>🏆 ランキング</h2>
-
-    <div id="ranking">
-        読み込み中...
-    </div>
-
 </div>
 
-<script type="module">
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import {
-    getFirestore,
-    collection,
-    addDoc,
-    query,
-    orderBy,
-    limit,
-    getDocs
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-
-    apiKey: "AIzaSyBc30xUy5mXqDegHSNiYllEsJXJ66BjwF4",
-    authDomain: "rankingtaipingu.firebaseapp.com",
-    projectId: "rankingtaipingu",
-
-};
-
-const app = initializeApp(firebaseConfig);
-
-const db = getFirestore(app);
+<script>
 
 const words = [
     "apple",
@@ -169,16 +126,28 @@ let time = 30;
 let timer;
 let playing = false;
 
-const wordEl = document.getElementById("word");
-const inputEl = document.getElementById("input");
-const scoreEl = document.getElementById("score");
-const comboEl = document.getElementById("combo");
-const timeEl = document.getElementById("time");
+const wordEl =
+document.getElementById("word");
+
+const inputEl =
+document.getElementById("input");
+
+const scoreEl =
+document.getElementById("score");
+
+const comboEl =
+document.getElementById("combo");
+
+const timeEl =
+document.getElementById("time");
+
+const startButton =
+document.getElementById("startButton");
 
 function randomWord(){
 
     return words[
-        Math.floor(Math.random() * words.length)
+        Math.floor(Math.random()*words.length)
     ];
 
 }
@@ -191,7 +160,7 @@ function showWord(){
 
 }
 
-window.startGame = function(){
+function startGame(){
 
     score = 0;
     combo = 0;
@@ -199,17 +168,21 @@ window.startGame = function(){
     playing = true;
 
     scoreEl.textContent = score;
-    comboEl.textContent = "🔥0 COMBO";
+
+    comboEl.textContent =
+    "🔥0 COMBO";
+
     timeEl.textContent = time;
 
     showWord();
 
     inputEl.value = "";
+
     inputEl.focus();
 
     clearInterval(timer);
 
-    timer = setInterval(async ()=>{
+    timer = setInterval(()=>{
 
         time--;
 
@@ -221,24 +194,6 @@ window.startGame = function(){
 
             playing = false;
 
-            const name =
-            prompt("名前を入力してください");
-
-            if(name){
-
-                await addDoc(
-                    collection(db,"ranking"),
-                    {
-                        name:name,
-                        score:score,
-                        created:Date.now()
-                    }
-                );
-
-            }
-
-            loadRanking();
-
             alert(
                 "ゲーム終了！ スコア：" + score
             );
@@ -249,13 +204,21 @@ window.startGame = function(){
 
 }
 
-inputEl.addEventListener("input",()=>{
+startButton.addEventListener(
+    "click",
+    startGame
+);
+
+inputEl.addEventListener(
+    "input",
+    ()=>{
 
     if(!playing) return;
 
     if(inputEl.value === currentWord){
 
         combo++;
+
         score++;
 
         scoreEl.textContent = score;
@@ -270,47 +233,6 @@ inputEl.addEventListener("input",()=>{
     }
 
 });
-
-async function loadRanking(){
-
-    const rankingEl =
-    document.getElementById("ranking");
-
-    rankingEl.innerHTML =
-    "読み込み中...";
-
-    const q = query(
-        collection(db,"ranking"),
-        orderBy("score","desc"),
-        limit(10)
-    );
-
-    const querySnapshot =
-    await getDocs(q);
-
-    rankingEl.innerHTML = "";
-
-    let rank = 1;
-
-    querySnapshot.forEach((doc)=>{
-
-        const data = doc.data();
-
-        rankingEl.innerHTML += `
-        <div class="rankItem">
-            🏆 ${rank}位 :
-            ${data.name}
-            - ${data.score}
-        </div>
-        `;
-
-        rank++;
-
-    });
-
-}
-
-loadRanking();
 
 </script>
 
